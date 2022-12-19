@@ -7,7 +7,7 @@
 
 'use strict'
 
-
+let schedule = require('../../schedule/model');
 let workout = {};
 
 workout.transform = (data) => {
@@ -35,6 +35,35 @@ workout.transformLimited = (data) =>{
 				result.name = item.title;		
 				return result;
 		});
+
+};
+
+workout.transformSchedule = (data) =>{  	 
+	let results = [];
+	let result = data.map((item, index) => {		
+			var result = {};
+			var i = item.id;
+			result.id = i;
+			result.title = item.title;	
+			result.duration_id = item.duration_id;	
+			result.audio_time = item.audio_time;	
+			result.schedule_id = 0;
+			//result.duration = item.duration;
+			result.duration = schedule.getActualTime(item.audio_time);
+			result.concentrations_id = item.concentrations_id;			
+			result.concentration = item.concentration;	
+			if (index % 2 == 0){
+				result.instructor_video_id = 1;
+				result.instructor_video_name = "Jodi Brinkman";
+			}else{								
+				result.instructor_video_id = 4;
+				result.instructor_video_name = "Laura Locker";
+			}
+			return result;
+	});
+
+	results.workouts = result;
+	return results;
 
 };
 

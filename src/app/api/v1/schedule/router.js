@@ -21,6 +21,7 @@ router.use((req, res, next) => {
 });
 
 router.get('/schedules', tracker.trackSession, schedule.get);
-router.get('/schedule', tracker.trackSession, schedule.getById);
+router.get('/scheduleA', tracker.trackSession, schedule.getById);
+router.get('/schedule', tracker.trackSession, schedule.getByUserPreference);
 
 module.exports = router;

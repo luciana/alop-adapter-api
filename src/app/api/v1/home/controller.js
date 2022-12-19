@@ -18,11 +18,24 @@ const loggingService = require('../shared/services/logging'),
         tracker = require('../shared/middleware/tracker'),
         user = require('../shared/models/user'),
         home = require('./model.js');
+       // abService = require('../shared/services/abTest');
 
 let homeController = {};
 
+// AB test completed - B won
+//  homeController.getA = (req, res, next) =>{
+//    abService.set_schedule_test("ALL_SCHEDULES_TEST_A");
+//    homeController.get(req, res, next);
+// };
+
 homeController.get = (req, res, next) =>{
-     let account = {};
+   // abService.set_schedule_test("ALL_SCHEDULES_TEST_B");
+    homeController.get(req, res, next);
+ };
+
+homeController.get = (req, res, next) =>{
+    console.log('USER TRACKING CLIENT CALLS /api/v1/home');
+    let account = {};
     const validate$ = user.validateToken$(req, res);
 
     const defaultAccount$ = validate$                                

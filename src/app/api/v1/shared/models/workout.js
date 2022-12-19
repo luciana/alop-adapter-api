@@ -28,9 +28,11 @@ const workoutService = require('../services/workout'),
     activityMapping = require('../mappings/activity'),
     loggingService = require('../services/logging'),
     loggingModel = require('../models/logging'),
+    schedule = require('../../schedule/model'),
     favoriteService = require('../services/favorite'),
     favoriteMapping = require('../mappings/favorite'),
     tracker = require('../middleware/tracker');
+    
 
 const REDIS_CACHE_TIME = configModule.get('REDIS_CACHE_TIME');
 const REDIS_WORKOUT_CACHE = "alop-adapter-workout";
@@ -38,6 +40,7 @@ const REDIS_FAV_CACHE = "alop-adapter-favorites";
 const REDIS_ACTIVITY_CACHE = "alop-adapter-activity";
 
 let workout = {};
+
 
 workout.get$ = (req, res) => {
     //let key = workout.getKeyFor(REDIS_WORKOUT_CACHE, req.headers);
@@ -73,14 +76,29 @@ workout.get$ = (req, res) => {
     // return Observable.merge(cacheIsRetrieved$,cacheIsNotRetrieved$);
 };
 
+
+
 workout.getDefault$ = () =>{
+    
     return Observable.of(workoutMapping.getDefault());
 };
 
 workout.getLabel$ = () => {
+    let label = "Enjoy a variety of classes!  ";
     return Observable.of({
-                 workout_label: "Your classes for this week: "
+                 workout_label: label
             });
+};
+
+workout.getSchedule$ = (req, res) => {
+   
+    const callWorkoutService$ = workoutService.getSchedule(req.headers)                                                                                                                               
+                            .map((data) => workoutMapping.transformSchedule(data))                            
+                            .catch((error) => {                                                                  
+                                    loggingModel.logWithLabel("Workout Data Transform - Return Workout Schedule. Calling Workout Service", error, tracker.requestID, "ERROR");                                   
+                                    return Observable.of(schedule.getDefault());   
+                            });
+    return Observable.merge(callWorkoutService$);
 };
 
 workout.getFavorites$ = (req, res) =>{

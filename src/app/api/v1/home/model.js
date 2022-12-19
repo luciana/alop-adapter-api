@@ -29,26 +29,29 @@ const   loggingService = require('../shared/services/logging'),
         workout = require('../shared/models/workout'),
         schedule = require('../schedule/model'),
         productIdentifier = require('../productIdentifiers/model');
+        //abService = require('../shared/services/abTest');
         //meditation = require('../shared/models/meditation');
 let home = {};
 //const REDIS_USER_CACHE = "alop-adapter-user";
+
 home.defaultAccount$ = () =>{
     const u$ = user.getDefault$();
     const s$ = u$ 
                 .do(val => console.log(`USER TRACKING INFO ID (default): ${val.user.id}`))                   
-                .map(params => params.user.created_at)                
-                .switchMap((d) =>  schedule.getListByDate$(d));
+                // .map(params => params.user.created_at)                             
+                // .switchMap((d) =>  schedule.getListByDate$(d));
+    const ww$ = Observable.of(schedule.getDefault());
     const pi$ = productIdentifier.getList$();
     const wl$ = workout.getLabel$();
     const b$ = Observable.of({
-                 banner_image: "https://s3.amazonaws.com/s3-us-alop-images/laura_picture_spine_stretch.jpeg"
+                 banner_image: "https://s3.amazonaws.com/s3-us-alop-images/men-arms-up.jpg"
             });
     //const w$ = workout.getDefault$();
     const a$ = workout.getDefaultActivities$();
     //const f$ = Observable.of({ favorites: {} });
     //const m$ = meditation.getDefault$();
     return Observable.concat(a$, 
-                                Observable.forkJoin(pi$, b$, wl$, s$, u$)
+                                Observable.forkJoin(pi$, b$, wl$, s$, ww$, u$)
                                 .concatMap(results => Observable.from(results))
                                 );
 
@@ -56,20 +59,25 @@ home.defaultAccount$ = () =>{
 
 home.getAccount$ = (req, res) => {
   	const u$ = user.get$(req, res);
-    let workoutClassLimit = 4; // default
+    let workoutClassLimit = 4; // default    
+    //let ALL_SCHEDULES_TEST_ID = abService.get_schedule_test();
     if (req.query.wlimit){
         workoutClassLimit = req.query.wlimit;
     }   
+    //const test$ = Observable.of(abService.get_schedule_test());
     const s$ = u$  
                 .do(val => console.log(`USER TRACKING INFO ID: ${val.user.id}`))                             
-                .map(params => params.user.created_at)                
-                .switchMap((d) =>  schedule.getListByDate$(d))
+                // .map(params => ({user_date: params.user.created_at})  )
+                // .switchMap((d) =>  schedule.getListByDate$(d))
+
+    
+    const ww$ = workout.getSchedule$(req, res);
     
     const pi$ = productIdentifier.getList$();
 
     const wl$ = workout.getLabel$();
     const b$ = Observable.of({
-                 banner_image: "https://s3.amazonaws.com/s3-us-alop-images/laura_picture_spine_stretch.jpeg"
+                 banner_image: "https://s3.amazonaws.com/s3-us-alop-images/men-arms-up.jpg"
             });
     //const w$ = workout.get$(req, res);
     const a$ = workout.getActivities$(req, res);
@@ -77,7 +85,7 @@ home.getAccount$ = (req, res) => {
     //const m$ = meditation.get$(req,res);
 
 	return Observable.concat(a$, 
-                                Observable.forkJoin(pi$, b$, wl$, s$,  u$)
+                                Observable.forkJoin(pi$, b$, wl$, s$,  ww$, u$)
                                 .concatMap(results => Observable.from(results))
                                 );
 
